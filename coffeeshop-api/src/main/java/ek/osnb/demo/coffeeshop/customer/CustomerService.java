@@ -102,4 +102,33 @@ class CustomerService implements CustomerApi {
 
         return result.get();
     }
+
+
+    CustomerResponse upsertMe(CustomerRequest request, String email) {
+        Optional<Customer> customer = repository.findByEmail(email);
+
+        if (customer.isPresent()) {
+            Customer existingCustomer = customer.get();
+
+            existingCustomer.updateDetails(
+                    request.name(),
+                    email,
+                    request.street(),
+                    request.postalCode(),
+                    request.city()
+            );
+
+            return CustomerMapper.toResponse(repository.save(existingCustomer));
+        } else {
+            Customer newCustomer = Customer.create(
+                    request.name(),
+                    email,
+                    request.street(),
+                    request.postalCode(),
+                    request.city()
+            );
+
+            return CustomerMapper.toResponse(repository.save(newCustomer));
+        }
+    }
 }
