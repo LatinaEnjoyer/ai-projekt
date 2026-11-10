@@ -1,7 +1,9 @@
 package ek.osnb.demo.coffeeshop.customer;
 
+import ek.osnb.demo.coffeeshop.common.NotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,5 +50,17 @@ class CustomerController {
             @Valid @RequestBody CustomerRequest request) {
 
         return service.update(id, request);
+    }
+
+
+    @GetMapping("/me")
+    CustomerInfo getCustomer(Authentication auth) {
+        return service.findCustomerByEmail(auth.getName())
+                .orElseThrow(() -> new NotFoundException("Customer not found"));
+    }
+
+    @PutMapping("/me")
+    CustomerResponse upsertMe(@RequestBody CustomerRequest request, Authentication auth) {
+        return service.upsertMe(request, auth.getName());
     }
 }
