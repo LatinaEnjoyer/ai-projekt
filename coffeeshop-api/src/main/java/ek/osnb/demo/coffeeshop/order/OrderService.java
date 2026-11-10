@@ -56,8 +56,9 @@ class OrderService implements OrderApi {
     // Everything in here happens in one transaction: if any step fails (e.g. one
     // product is out of stock), nothing is saved - no stock is taken, no order is
     // created and the cart keeps its items.
-    OrderResponse placeOrder(PlaceOrderRequest request) {
-        CustomerInfo customer = customers.getCustomer(request.customerId());
+    OrderResponse placeOrder(PlaceOrderRequest request, String email) {
+        CustomerInfo customer = customers.findCustomerByEmail(email)
+                .orElseThrow(() -> new NotFoundException("Customer not found"));
         CartInfo cart = carts.getCart(request.cartId());
 
         if (cart.isEmpty()) {
@@ -101,13 +102,14 @@ class OrderService implements OrderApi {
     }
 
     @Transactional(readOnly = true)
-    List<OrderSummaryResponse> findByCustomer(Long customerId) {
+    List<OrderSummaryResponse> findByCustomer(String email) {
         // 404 for an unknown customer instead of an empty list
-        customers.getCustomer(customerId);
+        CustomerInfo customerInfo = customers.findCustomerByEmail(email)
+                .orElseThrow(() -> new NotFoundException("Customer not found with email: " + email));
 
         List<OrderSummaryResponse> summaries = new ArrayList<>();
 
-        for (Order order : repository.findByCustomerIdOrderByPlacedAtDesc(customerId)) {
+        for (Order order : repository.findByCustomerIdOrderByPlacedAtDesc(customerInfo.id())) {
             summaries.add(OrderMapper.toSummary(order));
         }
 
