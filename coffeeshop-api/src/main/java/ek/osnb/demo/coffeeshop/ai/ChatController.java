@@ -31,6 +31,7 @@ class ChatController {
     @PostMapping("/chat")
     ChatResponse chat(@RequestBody ChatRequest request, Authentication auth) {
 
+        System.out.println(auth.getAuthorities());
         Long customerId = customerApi.findCustomerByEmail(auth.getName())
                 .map(CustomerInfo::id)
                 .orElse(null);
@@ -41,7 +42,7 @@ class ChatController {
 
         boolean isStaff = auth.getAuthorities().stream()
                 .anyMatch(authority ->
-                        authority.getAuthority().equals("STAFF"));
+                        authority.getAuthority().equals("ROLE_STAFF"));
 
         Object[] tools = isStaff
                 ? new Object[]{catalogTools, orderTools, staffTools}
@@ -63,6 +64,8 @@ class ChatController {
 
                     If you cannot find the requested information
                     say so.
+                    
+                    Never use emotes in your conversations or you will be dealt with
                     """)
                 .user(request.message())
                 .tools(tools)
