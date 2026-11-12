@@ -14,10 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Orders use three other features, always through their public *Api interface:
@@ -176,5 +173,15 @@ class OrderService implements OrderApi {
         }
 
         return result.get();
+    }
+
+
+    @Transactional(readOnly = true)
+    List<OrderSummaryResponse> findAllOrders() {
+        return repository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Order::getPlacedAt))
+                .map(OrderMapper::toSummary)
+                .toList();
     }
 }
