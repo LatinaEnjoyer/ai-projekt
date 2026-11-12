@@ -1,19 +1,31 @@
 package ek.osnb.demo.coffeeshop.ai;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/api/assistant")
 class ChatController {
-    private final AiClientService aiClientService;
+    private final ChatClient chatClient;
 
-    ChatController(AiClientService aiClientService) {
-        this.aiClientService = aiClientService;
+    ChatController(ChatClient chatClient) {
+        this.chatClient = chatClient;
     }
 
-    @GetMapping("/ask")
-    String chat(@RequestParam String prompt) {
-        return aiClientService.chat(prompt);
+    @PostMapping("/chat")
+    ChatResponse chat(@RequestBody ChatRequest request, Authentication auth) {
+
+        String response = chatClient.prompt()
+                .user(request.message())
+                .advisors(advisor -> advisor.param(
+                        ChatMemory.CONVERSATION_ID,
+                        auth.getName()
+                ))
+                .call()
+                .content();
+
+        return new ChatResponse(response);
     }
 }
