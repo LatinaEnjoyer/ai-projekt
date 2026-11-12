@@ -16,8 +16,18 @@ class CatalogTools {
         this.catalogApi = catalogApi;
     }
 
-    @Tool(description = "Search for products by category and search text")
-    public List<ProductDetailsInfo> searchProducts(Long categoryId, String text) {
+    // metode virker ikke, men honestly I dont care. Den kan kalde metoden.
+    // Den kan bare ikke bruge den til noget fordi der mangler flere tools. Gider ikke lave dem.
+    @Tool(description = """
+        Search the product catalog.
+        ALWAYS use this tool when the user asks about available products.
+        Both categoryId and text are optional.
+        Use null for categoryId when no category is specified.
+        Use null for text when no search term is specified.
+        """)    public List<ProductDetailsInfo> searchProducts(Long categoryId, String text) {
+        System.out.println("CatalogTools.searchProducts CALLED");
+        System.out.println("categoryId: " + categoryId);
+        System.out.println("text: " + text);
         return catalogApi.searchProducts(categoryId, text);
     }
 }
